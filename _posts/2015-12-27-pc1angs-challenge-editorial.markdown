@@ -45,7 +45,7 @@ This is the easiest problem in the contest. Let:
 * `L[i]` be the number of character `'L'` from position `1..i` (1-based index), and
 * `E[i]` be the number of character `'E'` from position `i..N`.
 
-For each `S[i]` and `S[j]`, where `i < j`, we can compute the number of combinations of the word `'LOVE'` as `L[i] * E[j]`. Output the sum of the number of combinations.
+For each `S[i] == 'O'` and `S[j] == 'V'`, where `i < j`, we can compute the number of combinations of the word `'LOVE'` as `L[i] * E[j]`. Output the sum of the number of combinations.
 
 Complexity: `O(|S|^2)`
 
