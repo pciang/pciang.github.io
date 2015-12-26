@@ -2,7 +2,7 @@
 layout: post
 title:  "pc1ang's Challenge Editorial"
 date:   2015-12-27 00:57:00 +0700
-categories: competitive-programming contest editorial
+categories: blog
 excerpt_separator: <!--more-->
 ---
 
