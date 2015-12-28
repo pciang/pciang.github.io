@@ -54,6 +54,8 @@ My solution: [link](https://www.hackerrank.com/contests/pc1angs-challenge/challe
 
 Alternatively, you may solve this with _**Dynamic Programming**_ approach which reduces the complexity to `O(|S|)`.
 
+$$ rendered with MathJax $$
+
 [lca]: https://en.wikipedia.org/wiki/Lowest_common_ancestor
 [medan]: https://www.hackerrank.com/contests/pc1angs-challenge/challenges/medan
 [ice-cave]: https://www.hackerrank.com/contests/pc1angs-challenge/challenges/ice-cave
