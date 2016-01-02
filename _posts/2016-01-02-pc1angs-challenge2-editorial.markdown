@@ -40,7 +40,7 @@ No first solver
 
 Easiest problem in the contest. Just binary search the answer, but look out for $$ k = 1 $$ (most people missed this).
 
-Complexity: $$ O( T \ log_kN) $$<br />
+Complexity: $$ O( T \ logN \ log_kN) $$<br />
 My solution: [link](https://www.hackerrank.com/contests/pc1angs-challenge-2/challenges/soda-drink/submissions/code/4406528)<br />
 First solver: [kenrick95][kenrick95]
 
