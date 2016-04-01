@@ -102,10 +102,11 @@ document.addEventListener('DOMContentLoaded', function (event) {
 			[camera_horizontal[2], camera_vertical[2], camera_direction[2]]
 		],
 
-		camera_ratio = [4, 3];
+		camera_expand = [.4, .3];
 	
-	var shrink_x = camera_ratio[1] / camera_ratio[0];
+	// var shrink_x = camera_ratio[1] / camera_ratio[0];
 
+	// Do not modify this
 	function rotateBox(deltaTime) {
 		var sin = Math.sin,
 			cos = Math.cos;
@@ -168,16 +169,18 @@ document.addEventListener('DOMContentLoaded', function (event) {
 			hypot = subtract(temp1, mid);
 			result = numeric.solve(camera_le, hypot);
 
-			var p1_x = Math.round( width / 2 + (result[0] / (length1 / 2)) * (width / 2) * shrink_x ),
-				p1_y = Math.round( height / 2 + (result[1] / (length1 / 2)) * (height / 2) );
+			// This equation is fishy
+			var p1_x = Math.round( width / 2 + (result[0] / (length1 * camera_expand[0] / 2)) * (width / 2) ),
+				p1_y = Math.round( height / 2 + (result[1] / (length1 * camera_expand[1] / 2)) * (height / 2) );
 
 			// Point2
 			mid = scale(camera_direction, length2);
 			hypot = subtract(temp2, mid);
 			result = numeric.solve(camera_le, hypot);
 
-			var p2_x = Math.round( width / 2 + (result[0] / (length2 / 2)) * (width / 2) * shrink_x),
-				p2_y = Math.round( height / 2 + (result[1] / (length2 / 2)) * (height / 2) );
+			// This one too
+			var p2_x = Math.round( width / 2 + (result[0] / (length2 * camera_expand[0] / 2)) * (width / 2) ),
+				p2_y = Math.round( height / 2 + (result[1] / (length2 * camera_expand[1] / 2)) * (height / 2) );
 
 			// console.log(p1_x, p1_y, p2_x, p2_y);
 
