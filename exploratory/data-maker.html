@@ -1,0 +1,97 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title>Data maker</title>
+
+<style type="text/css">
+
+#holder {
+	width: 400px;
+	height: 400px;
+	border: 0.5px solid black;
+}
+
+.grid {
+	width: 20px;
+	height: 20px;
+	border: 0.5px solid black;
+	box-sizing: border-box;
+	float: left;
+}
+
+.painted {
+	background-color: black;
+}
+
+</style>
+
+</head>
+<body>
+
+	<div id="holder" ondragstart="return false;"></div>
+	<button id='generate-btn'>Generate</button>
+	<pre id="output"></pre>
+
+<script type="text/javascript">
+var holder = document.getElementById('holder');
+var WIDTH = 20,
+	HEIGHT = 20;
+var grids = new Array(HEIGHT);
+var isPainted = new Array(HEIGHT);
+var mousedown = undefined;
+
+document.addEventListener('mousedown', function (event) { mousedown = true; });
+document.addEventListener('mouseup', function (event) { mousedown = false; });
+
+for(var i = 0; i < HEIGHT; ++i) {
+	grids[i] = new Array(WIDTH);
+	isPainted[i] = new Array(HEIGHT);
+	for(var j = 0; j < WIDTH; ++j) {
+		grids[i][j] = null;
+		isPainted[i][j] = false;
+	}
+}
+
+var listener = function(row, col, pass, event) {
+	if(!mousedown && !pass) return;
+	if(this.classList.contains('painted')) {
+		this.classList.remove('painted');
+		isPainted[row][col] = false;
+		return;
+	}
+	this.classList.add('painted');
+	isPainted[row][col] = true;
+}
+
+for(var i = 0; i < HEIGHT; ++i) {
+	for(var j = 0; j < WIDTH; ++j) {
+		var grid = document.createElement('div');
+		grid.classList.add('grid');
+		holder.appendChild(grid);
+		grid.setAttribute('data-row', i);
+		grid.setAttribute('data-col', j);
+		grids[i][j] = grid;
+		grid.addEventListener('mouseover', listener.bind(grid, i, j, false));
+		grid.addEventListener('mousedown', listener.bind(grid, i, j, true));
+		grid.addEventListener('dragstart', function (event) { return false; });
+	}
+}
+
+var output = document.getElementById('output');
+var generateButton = document.getElementById('generate-btn');
+
+generateButton.addEventListener('click', function (event) {
+	var outputArr = [];
+	for(var i = 0; i < HEIGHT; ++i) {
+		for(var j = 0; j < WIDTH; ++j) {
+			outputArr.push(isPainted[i][j] ? 1 : 0);
+		}
+	}
+	output.innerHTML = outputArr.join('');
+});
+
+</script>
+
+</body>
+</html>
