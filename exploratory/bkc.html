@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>bo kang co</title>
+    <script type="text/javascript" src="three.min.js"></script>
+</head>
+<body>
+
+<canvas width="320" height="240" id="mainCanvas"></canvas>
+
+<script type="text/javascript">
+"use strict";
+
+/*
+a - (-1.0,  0.0,  0.0)
+b - ( 1.0,  0.0,  1.0)
+c - ( 0.0,  0.5, -1.0)
+
+d - ( 0.0,  2.0,  0.0)
+
+(c,b,a)
+(c,a,d)
+(c,d,b)
+(a,b,d)
+
+
+                        d
+
+
+
+                        c
+
+
+            a           O
+
+                              b
+
+*/
+
+var mainCanvas = document.getElementById('mainCanvas'),
+    ctx = mainCanvas.getContext('2d'),
+    width = mainCanvas.width,
+    height = mainCanvas.height
+
+var viewpt = new THREE.Vector3(0.0,0.0,-10.0),
+    viewdir = new THREE.Vector3(0.0,0.0,1.0),
+    viewhor = new THREE.Vector3(-1.0,0.,0.),
+    viewver = new THREE.Vector3(0.,1.0,0.)
+
+var mapperdist = 1.0,
+    whratio = width/height,
+    hwratio = height/width,
+    supress = 2.0,
+    wexpansion = whratio / supress,
+    hexpansion = 1. / supress
+
+var a = new THREE.Vector3(-1.0, 0.0, 0.0),
+    b = new THREE.Vector3(1.0, 0.0, 1.0),
+    c = new THREE.Vector3(0.0, 0.5, -1.0),
+    d = new THREE.Vector3(0.0, 2.0, 0.0)
+
+var faces = [
+    [c,b,a],
+    [c,a,d],
+    [c,d,b],
+    [a,b,d],
+    ]
+
+var colors = [
+    'red',
+    'green',
+    'blue',
+    'yellow',
+    ];
+
+var hexColors = [
+    '#ff0000',
+    '#00ff00',
+    '#0000ff',
+    '#ffff00',
+    ];
+
+var rgbColors = [
+    [255, 0, 0],
+    [0, 255, 0],
+    [0, 0, 255],
+    [255, 255, 0],
+    ];
+
+var normalFaces = new Array(faces.length),
+    faceDisp = new Array(faces.length)
+
+// transform polygon to normal plane
+for(var i = 0; i < faces.length; ++i) {
+    var tempV1 = new THREE.Vector3().subVectors(faces[i][2], faces[i][1]),
+        tempV2 = new THREE.Vector3().subVectors(faces[i][0], faces[i][1]);
+    normalFaces[i] = tempV1.cross(tempV2).normalize()
+    faceDisp[i] = faces[i][1].clone()
+}
+
+function fireRay(from, dir) {
+    var whichFace = -1,
+        distance = Infinity
+    for(var i = 0; i < normalFaces.length; ++i) {
+        if(dir.dot(normalFaces[i]) >= 0) {
+            continue;
+        }
+
+        /*
+        (a + L d - x) . N = 0
+        a . N + L (d . N) - x . N = 0
+        L (d . N) = (x - a) . N
+        L = ((x - a) . N) / (d . N)
+        */
+        var ddot = dir.dot(normalFaces[i])
+        if(Math.abs(ddot) < 1e-6) {
+            continue;
+        }
+
+        var L = faceDisp[i].clone().sub(from).dot(normalFaces[i]) / ddot,
+            p = from.clone().addScaledVector(dir, L),
+            len = p.clone().sub(from).length();
+
+        if(L < 0) {
+            continue;
+        }
+
+        var size = faces[i].length,
+            tempV1 = faces[i][size - 1].clone().sub(p),
+            tempV2 = faces[i][0].clone().sub(p)
+
+        if(tempV1.length() < 1e-6 || tempV2.length() < 1e-6) {
+            distance = len;
+            whichFace = i;
+            continue;
+        }
+
+        var rot = 0.,
+            perp = tempV1.clone().cross(tempV2).normalize(),
+            dotAngle = Math.acos(tempV1.dot(tempV2) / tempV1.length() / tempV2.length())
+
+        if(Math.abs(perp.dot(normalFaces[i]) - 1.) < 1e-6) {
+            rot += dotAngle
+        } else {
+            rot -= dotAngle
+        }
+
+        for(var j = 1; j < size; ++j) {
+            tempV1 = faces[i][j - 1].clone().sub(p)
+            tempV2 = faces[i][j].clone().sub(p)
+
+            if(tempV1.length() < 1e-6 || tempV2.length() < 1e-6) {
+                distance = len;
+                whichFace = i;
+                break;
+            }
+
+            perp = tempV1.clone().cross(tempV2).normalize()
+            dotAngle = Math.acos(tempV1.dot(tempV2) / tempV1.length() / tempV2.length())
+
+            if(Math.abs(perp.dot(normalFaces[i]) - 1.) < 1e-6) {
+                rot += dotAngle
+            } else {
+                rot -= dotAngle
+            }
+        }
+
+        if(Math.abs(rot - 2 * Math.PI) < 1e-6) {
+            if(len < distance) {
+                distance = len
+                whichFace = i
+            }
+        }
+    }
+    return whichFace
+}
+
+var lastT = 0.,
+    rotAx = new THREE.Vector3(0.,1.,0.),
+    angularSpeed = 4./3.*Math.PI
+function render(t) {
+    var deltaTimeMs = t - lastT,
+        deltaTimeSec = deltaTimeMs / 1000.
+
+    ctx.save()
+    ctx.fillStyle = '#fff'
+    ctx.fillRect(0,0,width,height)
+    ctx.restore()
+    for(var py = 0; py < height; ++py) {
+        var ry = ((py + 0.5) / height) * hexpansion - hexpansion / 2.
+        for(var px = 0; px < width; ++px) {
+            var rx = ((px + 0.5) / width) * wexpansion - wexpansion / 2.
+
+            // console.log(py, px)
+
+            var from = viewpt.clone()
+            from.addScaledVector(viewdir, mapperdist)
+            from.addScaledVector(viewhor, rx * mapperdist)
+            from.addScaledVector(viewver, ry * mapperdist)
+            var dir = from.clone().sub(viewpt).normalize()
+
+            // console.log(py, px, from, dir)
+
+            var faceId = fireRay(from, dir);
+            if(faceId == -1) {
+                continue
+            }
+
+            ctx.save()
+            ctx.fillStyle = hexColors[faceId]
+            ctx.fillRect(px, height - 1 - py, 1, 1)
+            ctx.restore()
+        }
+    }
+
+    a.applyAxisAngle(rotAx,deltaTimeSec*angularSpeed)
+    b.applyAxisAngle(rotAx,deltaTimeSec*angularSpeed)
+    c.applyAxisAngle(rotAx,deltaTimeSec*angularSpeed)
+    d.applyAxisAngle(rotAx,deltaTimeSec*angularSpeed)
+    // transform polygon to normal plane
+    for(var i = 0; i < faces.length; ++i) {
+        var tempV1 = new THREE.Vector3().subVectors(faces[i][2], faces[i][1]),
+            tempV2 = new THREE.Vector3().subVectors(faces[i][0], faces[i][1]);
+        normalFaces[i] = tempV1.cross(tempV2).normalize()
+        faceDisp[i] = faces[i][1].clone()
+    }
+
+    lastT = t
+    window.requestAnimationFrame(render)
+}
+
+window.requestAnimationFrame(render)
+
+</script>
+
+</body>
+</html>
